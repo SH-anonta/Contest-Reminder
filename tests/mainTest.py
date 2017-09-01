@@ -64,22 +64,23 @@ class MyTestCase(unittest.TestCase):
         qapp.exec_()
 
     def testMainGUI(self):
+        cf = sample.DataFetcher.CodeForcesDataFetcher()
+        cont = cf.getFutureContests()
+
         qapp = QApplication(sys.argv)
 
         window = sample.gui.MainWindow()
         window.show()
 
-        cf = sample.DataFetcher.CodeForcesDataFetcher()
-        cont = cf.getFutureContests()
 
         def updateTable():
-            time.sleep(5)
             st= time.time()
             window.updateTable(cont)
-
             print(time.time() - st)
 
+
             timer = threading.Timer(5, function=updateTable)
+            timer.setDaemon(True)
             timer.start()
 
         updateTable()

@@ -19,7 +19,7 @@ class MainWindow(QMainWindow):
         self.main_panel= MainPanel()
 
         self.setCentralWidget(self.main_panel)
-        self.setGeometry(500, 500, 600, 300)
+        self.setGeometry(500, 500, 700, 400)
         self.show()
 
     def updateTable(self, contests):
@@ -43,21 +43,26 @@ class MainPanel(QWidget):
         self.show()
 
     def setupTable(self):
-        table = QTableWidget(1, 4)
+        table = QTableWidget(0, 5)
         table.setHorizontalHeaderLabels(['Title', 'Status', 'Time', 'Duration'])
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        table.setColumnWidth(0, 300)
         return table
 
+
     def updateTable(self, contests):
+        # self.clearTable()
         self.contests_table.clear()
+        self.contests_table.setRowCount(0)
 
         self.time_format= '%d %b at %M:%I %p'
-        self.contests_table.setHorizontalHeaderLabels(['Title', 'Status', 'Time', 'Duration'])
+        self.contests_table.setHorizontalHeaderLabels(['Title', 'Judge','Status', 'Time', 'Duration'])
 
         for row, contest in enumerate(contests):
             self.contests_table.insertRow(row)
             self.contests_table.setItem(row, 0, QTableWidgetItem(contest.title))
-            self.contests_table.setItem(row, 1, QTableWidgetItem(contest.status))
-            self.contests_table.setItem(row, 2, QTableWidgetItem(time.strftime(self.time_format, time.localtime(contest.time))))
+            self.contests_table.setItem(row, 1, QTableWidgetItem(contest.judge))
+            self.contests_table.setItem(row, 2, QTableWidgetItem(contest.status))
+            self.contests_table.setItem(row, 3, QTableWidgetItem(time.strftime(self.time_format, time.localtime(contest.time))))
 
-            self.contests_table.setItem(row, 3, QTableWidgetItem(time.strftime('%H:%M', time.gmtime(contest.duration))))
+            self.contests_table.setItem(row, 4, QTableWidgetItem(time.strftime('%H:%M', time.gmtime(contest.duration))))

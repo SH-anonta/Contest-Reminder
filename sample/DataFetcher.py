@@ -2,11 +2,14 @@ import requests
 import time
 
 class Contest:
-    def __init__(self, title, start_time, duration):
+    def __init__(self, title, start_time, duration, judge):
         self._title= title
         self._start_time= start_time
         self._duration= duration
-        self._status= 'scheduled'   # todo calculate: should be scheduled or running
+        self._judge= judge
+
+        self._status= 'Running' if start_time <= time.time() <= start_time+duration else 'Scheduled'
+
 
     @property
     def title(self):
@@ -24,8 +27,12 @@ class Contest:
     def status(self):
         return self._status
 
+    @property
+    def judge(self):
+        return self._judge
+
     # comparing should be done based on start time
-    def __cmp__(self, other):
+    def __lt__(self, other):
         return self._start_time < other._start_time
 
 
@@ -38,7 +45,7 @@ class DataFetcher:
     Common base class for classes that fetch data from different sources
     """
     DATA_SOURCE = 'NOT_SET'
-
+    JUDGE = 'NOT_SET'
     def __init__(self):
         self.last_updated_data= None
         self.future_contests_list = []
@@ -59,6 +66,7 @@ class DataFetcher:
 # todo handle server downs
 class CodeForcesDataFetcher(DataFetcher):
     DATA_SOURCE = 'http://codeforces.com/'
+    JUDGE= 'Code Forces'
 
     def __init__(self):
         super().__init__()
@@ -76,6 +84,24 @@ class CodeForcesDataFetcher(DataFetcher):
         contests= []
         for jsondict in j['result']:
             if jsondict['startTimeSeconds'] + jsondict['durationSeconds'] > time.time():
-                contests.append(Contest(jsondict['name'],jsondict['startTimeSeconds'], jsondict['durationSeconds']))
+                contests.append(Contest(jsondict['name'],jsondict['startTimeSeconds'], jsondict['durationSeconds'], self.JUDGE))
 
+        return contests
+
+class ContestDataCollector:
+    def __init__(self):
+        self.sources= []
+        self.sources.append(CodeForcesDataFetcher())
+
+    def getFutureContests(self):
+        """
+        :return: a list of future scheduled contests in fetchers list, list is sorted in start time
+        """
+
+        contests= []
+        for fetch in self.sources:
+            contests.extend(fetch.getFutureContests())
+
+        #sorting the contests based on start time
+        contests.sort()
         return contests
