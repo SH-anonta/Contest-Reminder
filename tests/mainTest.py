@@ -1,4 +1,4 @@
-import unittest, sys, time, threading
+import unittest, sys, time, threading, requests
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtWidgets import QApplication, QWidget, QTableWidget, QTableWidgetItem, QTableView
@@ -63,6 +63,7 @@ class MyTestCase(unittest.TestCase):
         window = TableTest()
         qapp.exec_()
 
+    @unittest.skip
     def testMainGUI(self):
         cf = sample.DataFetcher.CodeForcesDataFetcher()
         cont = cf.getFutureContests()
@@ -102,5 +103,17 @@ class ModleTesters(unittest.TestCase):
         for x in cont:
             print(x)
 
+    def testTopCoderFetcher(self):
+        with requests.session() as s:
+            s.get('http://api.topcoder.com/v2/validation/sso')
+            print(s.cookies)
+            m = 'http://api.topcoder.com/v2/data/srm/contests'
 
+            # headers = {'user-agent': 'Mozilla/5.0'}
+
+            resp= s.get(m)
+            self.assertEqual(resp.status_code, requests.codes['ok'])
+            print('code: ', resp.status_code)
+            j= resp.json()
+            print(j)
 

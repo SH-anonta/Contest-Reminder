@@ -50,17 +50,11 @@ class DataFetcher:
         self.last_updated_data= None
         self.future_contests_list = []
 
-    def getAllContests(self):
-        """
-        :return: a list of Contests from a source
-        """
 
     def getFutureContests(self):
         """
         :return: a list of upcoming Contests
         """
-    def dataUpdated(self):
-        pass # todo implemetn
 
 
 # todo handle server downs
@@ -87,6 +81,19 @@ class CodeForcesDataFetcher(DataFetcher):
                 contests.append(Contest(jsondict['name'],jsondict['startTimeSeconds'], jsondict['durationSeconds'], self.JUDGE))
 
         return contests
+
+class TopCoderDataFetcher(DataFetcher):
+    DATA_SOURCE = 'https://www.topcoder.com/'
+    JUDGE = 'Top Coder'
+
+    def __init__(self):
+        super().__init__()
+
+    def getFutureContests(self):
+        m = 'http://api.topcoder.com/v2/data/srm/contests'
+
+
+
 
 class ContestDataCollector:
     def __init__(self):

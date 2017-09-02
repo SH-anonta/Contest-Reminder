@@ -14,13 +14,13 @@ def main():
     def updater():
         print('Updating...')
         window.updateTable(data_provider.getFutureContests())
-        timer = threading.Timer(5, updater)
+        timer = threading.Timer(60, updater)
         timer.setDaemon(True)
         timer.start()
 
 
     data_provider = ContestDataCollector()
-    updater()
+    threading.Timer(.1, updater).start()
     exit(qapp.exec_())
 
 
@@ -29,9 +29,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-
-

@@ -44,19 +44,19 @@ class MainPanel(QWidget):
 
     def setupTable(self):
         table = QTableWidget(0, 5)
-        table.setHorizontalHeaderLabels(['Title', 'Status', 'Time', 'Duration'])
+        table.setHorizontalHeaderLabels(['Title', 'Judge','Status', 'Time', 'Duration'])
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
         table.setColumnWidth(0, 300)
+        table.setColumnWidth(1, 80)
+        table.setColumnWidth(2, 80)
+        table.setColumnWidth(3, 120)
         return table
 
 
     def updateTable(self, contests):
-        # self.clearTable()
-        self.contests_table.clear()
         self.contests_table.setRowCount(0)
 
         self.time_format= '%d %b at %M:%I %p'
-        self.contests_table.setHorizontalHeaderLabels(['Title', 'Judge','Status', 'Time', 'Duration'])
 
         for row, contest in enumerate(contests):
             self.contests_table.insertRow(row)
