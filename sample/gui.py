@@ -19,7 +19,9 @@ class MainWindow(QMainWindow):
         self.main_panel= MainPanel()
 
         self.setCentralWidget(self.main_panel)
-        self.setGeometry(500, 500, 700, 400)
+        self.setGeometry(800, 100, 700, 400)
+        # self.statusBar().setSizeGripEnabled(False)
+        self.setFixedSize(700, 400)
         self.show()
 
     def updateTable(self, contests):
@@ -50,6 +52,7 @@ class MainPanel(QWidget):
         table.setColumnWidth(1, 80)
         table.setColumnWidth(2, 80)
         table.setColumnWidth(3, 120)
+        table.setColumnWidth(4, 80)
         return table
 
 
