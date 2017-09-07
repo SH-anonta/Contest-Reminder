@@ -63,6 +63,7 @@ class ModleTesters(unittest.TestCase):
         t.cancel()
         t.start()
 
+    @unittest.skip
     def testUpdater(self):
         qapp = QApplication(sys.argv)
 
@@ -80,3 +81,11 @@ class ModleTesters(unittest.TestCase):
     def helperChangeInterval(self, updater):
         print('updated')
         updater.setUpdateInterval(3)
+
+    def testCodeChefDataFetcher(self):
+        ccdf= sample.DataFetcher.CodeChefDataFetcher()
+
+        cont = ccdf.getFutureContests()
+
+        for c in cont:
+            print(c)

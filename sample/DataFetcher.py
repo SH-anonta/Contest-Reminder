@@ -1,5 +1,9 @@
 import requests
 import time
+import datetime
+import pytz
+import bs4
+
 
 class Contest:
     def __init__(self, title, start_time, duration, judge):
@@ -37,7 +41,7 @@ class Contest:
 
 
     def __str__(self):
-        return '%s %s %s' % (self._title, self._start_time)
+        return '%s %s %s' % (self._title, self._start_time, self._judge)
 
 
 class DataFetcher:
@@ -45,7 +49,7 @@ class DataFetcher:
     Common base class for classes that fetch data from different sources
     """
     DATA_SOURCE = 'NOT_SET'
-    JUDGE = 'NOT_SET'
+    JUDGE_NANE = 'NOT_SET'
     def __init__(self):
         self.last_updated_data= None
         self.future_contests_list = []
@@ -60,7 +64,7 @@ class DataFetcher:
 # todo handle server downs
 class CodeForcesDataFetcher(DataFetcher):
     DATA_SOURCE = 'http://codeforces.com/'
-    JUDGE= 'Code Forces'
+    JUDGE_NANE= 'Code Forces'
 
     def __init__(self):
         super().__init__()
@@ -78,27 +82,101 @@ class CodeForcesDataFetcher(DataFetcher):
         contests= []
         for jsondict in j['result']:
             if jsondict['startTimeSeconds'] + jsondict['durationSeconds'] > time.time():
-                contests.append(Contest(jsondict['name'],jsondict['startTimeSeconds'], jsondict['durationSeconds'], self.JUDGE))
+                contests.append(Contest(jsondict['name'],jsondict['startTimeSeconds'],
+                jsondict['durationSeconds'], self.JUDGE_NANE))
 
         return contests
 
-class TopCoderDataFetcher(DataFetcher):
-    DATA_SOURCE = 'https://www.topcoder.com/'
-    JUDGE = 'Top Coder'
 
-    def __init__(self):
-        super().__init__()
+
+class CodeChefDataFetcher(DataFetcher):
+    DATA_SOURCE = 'https://www.codechef.com/'
+    JUDGE_NANE = 'Code Chef'
+    CODECHEF_DATE_TIME_FORMAT= '%Y-%m-%dT%H:%M:%S'
+
 
     def getFutureContests(self):
-        m = 'http://api.topcoder.com/v2/data/srm/contests'
+        contest_page = self.getContestPage()
+        soup = bs4.BeautifulSoup(contest_page , 'lxml')
+        tables = soup.findAll('table')
 
+        dataTablesRead = 0  #keep count of how many tables have been read,
+        contests= []
+        for table in tables:
+            # only need to read the first two tables with class set to 'dataTable'
+            if dataTablesRead >= 2: break
 
+            try:
+                # if this table does not have class attribute set to dataTable
+                if not 'dataTable' in table['class']:
+                    continue
+            except KeyError:
+                # in case the table has no class attribute
+                continue
 
+            contests.extend(self.processTable(table))
+            dataTablesRead+= 1
+
+        return contests
+
+    # Helper methods
+    def getContestPage(self):
+        resp= requests.get('https://www.codechef.com/contests')
+        if resp.status_code != requests.codes['ok']: return ''
+
+        return resp.text
+
+    def processTable(self, table):
+        """
+        :param table: a BeautifulSoup object representing a table
+        :return: list of contests extracted from the table
+        """
+        tbody = table.tbody
+
+        contests= []
+        for row in tbody.findAll('tr'):
+            # print(row.contents[1])
+            name= row.contents[3].a.string  # name
+            start_time= row.contents[5]['data-starttime'] # start date
+            end_time= row.contents[7]['data-endtime']  # end date
+
+            unix_start_time = self.convertISTtoUCT(start_time)
+            unix_end_time= self.convertISTtoUCT(end_time)
+
+            contests.append(Contest(name, unix_start_time, unix_end_time-unix_start_time, self.JUDGE_NANE))
+
+        return contests
+
+    def convertISTtoUCT(self, ist_time):    #todo complete this
+        """
+        :param ist_time: time in string format: '2017-09-30T19:30:00+05:30' in IST
+        :return: UTC in seconds from epoch
+        """
+
+        temp = datetime.datetime(1999, 1, 1, 1)
+        time_format = '%Y-%m-%dT%H:%M:%S'
+
+        str_t, diff = ist_time.split('+')
+
+        local_tzname = pytz.country_timezones('IN')[0]  #since time is in IST
+        local = pytz.timezone(local_tzname)
+
+        tt = temp.strptime(str_t, time_format)
+        local_dt = local.localize(tt, is_dst=None)
+
+        utc_dt = local_dt.astimezone(pytz.utc)  # convert localized time to utc time
+        utc_dt= utc_dt.replace(tzinfo= None)    # make datetime time zone naive
+
+        utc_epoch = datetime.datetime(1970,1,1) # unix epoch datetime
+
+        # return seconds since epoch (the subtraction returns a timedelta object)
+        return (utc_dt - utc_epoch).total_seconds()
 
 class ContestDataCollector:
     def __init__(self):
         self.sources= []
         self.sources.append(CodeForcesDataFetcher())
+        self.sources.append(CodeChefDataFetcher())
 
     def getFutureContests(self):
         """
