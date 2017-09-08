@@ -6,13 +6,13 @@ import bs4
 
 
 class Contest:
-    def __init__(self, title, start_time, duration, judge):
+    def __init__(self, title, start_time, end_time, judge):
         self._title= title
         self._start_time= start_time
-        self._duration= duration
+        self._end_time= end_time
         self._judge= judge
 
-        self._status= 'Running' if start_time <= time.time() <= start_time+duration else 'Scheduled'
+        self._status= 'Running' if start_time <= time.time() <= end_time else 'Scheduled'
 
 
     @property
@@ -20,12 +20,16 @@ class Contest:
         return self._title
 
     @property
-    def time(self):
+    def start_time(self):
         return self._start_time
 
     @property
+    def end_time(self):
+        return self._end_time
+
+    @property
     def duration(self):
-        return self._duration
+        return self._end_time-self._start_time
 
     @property
     def status(self):
@@ -35,6 +39,7 @@ class Contest:
     def judge(self):
         return self._judge
 
+
     # comparing should be done based on start time
     def __lt__(self, other):
         return self._start_time < other._start_time
@@ -42,7 +47,6 @@ class Contest:
 
     def __str__(self):
         return '%s %s %s' % (self._title, self._start_time, self._judge)
-
 
 class DataFetcher:
     """
@@ -77,13 +81,16 @@ class CodeForcesDataFetcher(DataFetcher):
 
         j = resp.json()
 
-        # print(j['result'][0])
-
         contests= []
         for jsondict in j['result']:
-            if jsondict['startTimeSeconds'] + jsondict['durationSeconds'] > time.time():
-                contests.append(Contest(jsondict['name'],jsondict['startTimeSeconds'],
-                jsondict['durationSeconds'], self.JUDGE_NANE))
+
+            start = jsondict['startTimeSeconds']
+            duration = jsondict['durationSeconds']
+            title= jsondict['name']
+
+            # only include future and running contests
+            if start + duration > time.time():
+                contests.append(Contest(title, start, start+duration, self.JUDGE_NANE))
 
         return contests
 
@@ -143,7 +150,7 @@ class CodeChefDataFetcher(DataFetcher):
             unix_start_time = self.convertISTtoUCT(start_time)
             unix_end_time= self.convertISTtoUCT(end_time)
 
-            contests.append(Contest(name, unix_start_time, unix_end_time-unix_start_time, self.JUDGE_NANE))
+            contests.append(Contest(name, unix_start_time, unix_end_time, self.JUDGE_NANE))
 
         return contests
 

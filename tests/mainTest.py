@@ -16,7 +16,7 @@ class MyTestCase(unittest.TestCase):
         pass
 
 
-    @unittest.skip
+
     def testMainGUI(self):
         cf = sample.DataFetcher.CodeForcesDataFetcher()
         cont = cf.getFutureContests()
@@ -82,6 +82,7 @@ class ModleTesters(unittest.TestCase):
         print('updated')
         updater.setUpdateInterval(3)
 
+    @unittest.skip
     def testCodeChefDataFetcher(self):
         ccdf= sample.DataFetcher.CodeChefDataFetcher()
 

@@ -1,9 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QMainWindow
 from PyQt5.QtWidgets import  QTableWidget,QTableWidgetItem
-from PyQt5.QtWidgets import QLabel
-
 from PyQt5.QtWidgets import QGridLayout, QVBoxLayout
 from PyQt5.QtWidgets import QAbstractItemView
+from PyQt5.QtGui import QIcon
 
 import time
 
@@ -22,6 +21,10 @@ class MainWindow(QMainWindow):
         self.setGeometry(800, 100, 700, 400)
         # self.statusBar().setSizeGripEnabled(False)
         self.setFixedSize(700, 400)
+
+        window_icon= QIcon('resources/titlebar_icon.png')
+        self.setWindowIcon(window_icon)
+
         self.show()
 
     def updateTable(self, contests):
@@ -48,7 +51,7 @@ class MainPanel(QWidget):
         table = QTableWidget(0, 5)
         table.setHorizontalHeaderLabels(['Title', 'Judge','Status', 'Start Time', 'Duration'])
         table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        table.setColumnWidth(0, 300)
+        table.setColumnWidth(0, 200)
         table.setColumnWidth(1, 80)
         table.setColumnWidth(2, 80)
         table.setColumnWidth(3, 120)
@@ -59,13 +62,13 @@ class MainPanel(QWidget):
     def updateTable(self, contests):
         self.contests_table.setRowCount(0)
 
-        self.time_format= '%d %b at %I:%M %p'
+        self.start_time_format= '%d %b at %I:%M %p'
 
         for row, contest in enumerate(contests):
             self.contests_table.insertRow(row)
             self.contests_table.setItem(row, 0, QTableWidgetItem(contest.title))
             self.contests_table.setItem(row, 1, QTableWidgetItem(contest.judge))
             self.contests_table.setItem(row, 2, QTableWidgetItem(contest.status))
-            self.contests_table.setItem(row, 3, QTableWidgetItem(time.strftime(self.time_format, time.localtime(contest.time))))
+            self.contests_table.setItem(row, 3, QTableWidgetItem(time.strftime(self.start_time_format, time.localtime(contest.start_time))))
 
-            self.contests_table.setItem(row, 4, QTableWidgetItem(time.strftime('%d:%H:%M', time.gmtime(contest.duration))))
+            self.contests_table.setItem(row, 4, QTableWidgetItem(time.strftime('%d days %H:%M', time.gmtime(contest.duration))))
