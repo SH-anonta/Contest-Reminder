@@ -6,6 +6,17 @@ from PyQt5.QtGui import QIcon
 
 import time
 
+class GUIResources:
+
+    @classmethod
+    def getTitleBarIcon(self):
+        return '../resources/titlebar_icon.png'
+
+    @classmethod
+    def getTitleBarText(self):
+        return 'Contest reminder'
+
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -18,11 +29,11 @@ class MainWindow(QMainWindow):
         self.main_panel= MainPanel()
 
         self.setCentralWidget(self.main_panel)
-        # self.statusBar().setSizeGripEnabled(False)
+        self.setWindowTitle(GUIResources.getTitleBarText())
         self.setFixedSize(700, 400)
         self.move(750, 100)
 
-        window_icon= QIcon('resources/titlebar_icon.png')
+        window_icon= QIcon(GUIResources.getTitleBarIcon())
         self.setWindowIcon(window_icon)
 
         self.show()
