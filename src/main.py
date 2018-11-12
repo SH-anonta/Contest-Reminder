@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import QApplication
 import time
 
 # modules of this project
-from sample.gui import MainWindow
-from sample.DataFetcher import ContestDataCollector
+from src.gui import MainWindow
+from src.DataFetcher import ContestDataCollector
 
 
 class TableUpdater:
